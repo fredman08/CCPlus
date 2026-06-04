@@ -94,3 +94,44 @@ jobs:
               --notes "Automated CCPlus run. View: https://fredman08.github.io/CCPlus/artifacts/$(basename "$NEW")" \
               || echo "release step skipped"
           fi
+
+      # Emails you the result of every run (new version OR "no significant updates") by POSTing
+      # the latest runlog entry to a Power Automate flow. No-ops until PA_WEBHOOK_URL is set.
+      - name: Notify via Power Automate (Outlook email)
+        if: always()
+        env:
+          PA_WEBHOOK_URL: ${{ secrets.PA_WEBHOOK_URL }}
+        run: |
+          if [ -z "$PA_WEBHOOK_URL" ]; then
+            echo "::notice title=No email sent::PA_WEBHOOK_URL secret not set. See SETUP.md section B."
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, os, urllib.request
+          run = json.load(open("state/runlog.json"))["runs"][-1]
+          site = "https://fredman08.github.io/CCPlus/"
+          if run.get("status") == "generated":
+              art = os.path.basename(run.get("artifact", ""))
+              url = site + "artifacts/" + art if art else site
+              subject = f"CCPlus v{run.get('version','?')} published — new Claude Code updates"
+              body = run.get("summary", "")
+          else:
+              url = site
+              subject = "CCPlus — no significant Claude Code updates this week"
+              body = run.get("note", "")
+          payload = {
+              "status": run.get("status", ""),
+              "version": run.get("version", ""),
+              "subject": subject,
+              "summary": body,
+              "url": url,
+              "timestamp": run.get("timestamp", ""),
+          }
+          req = urllib.request.Request(
+              os.environ["PA_WEBHOOK_URL"],
+              data=json.dumps(payload).encode(),
+              headers={"Content-Type": "application/json"},
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              print("Notified Power Automate:", r.status, "-", subject)
+          PY

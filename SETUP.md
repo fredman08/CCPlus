@@ -35,36 +35,59 @@ routine-run cap. View run history on the routines page.
 
 ---
 
-## B. Outlook email notifications (Power Automate)
+## B. Outlook email notifications (Power Automate webhook)
 
-Cloud routines can't send Outlook mail directly, so a small Power Automate **cloud flow** watches
-the repo and emails you the result of each run (including the "no significant updates" case).
+The GitHub workflow POSTs each run's summary to a Power Automate flow, which emails you. This
+uses only **standard** connectors (works on a free Power Automate license), fires for both
+scheduled and on-demand runs, and needs just two actions. The workflow step is already in
+`.github/workflows/ccplus.yml` — it stays dormant until the `PA_WEBHOOK_URL` secret is set.
 
-Build it at <https://make.powerautomate.com> → **+ Create → Automated cloud flow**:
+### B1. Build the flow (in Power Automate)
 
-1. **Trigger:** GitHub connector → *"When a push occurs"* (or *"When a commit is created"*) on
-   `fredman08/CCPlus`, branch `main`.
-   - If the GitHub connector isn't available in your tenant, use **Recurrence** (weekly, Monday
-     ~13:30) instead and skip to step 2 using an HTTP GET.
-2. **Get the run status:** add an **HTTP** action (or *"Get file content"* via raw URL):
-   `GET https://raw.githubusercontent.com/fredman08/CCPlus/main/state/runlog.json`
-3. **Parse JSON:** `Parse JSON` on the body; sample schema = the contents of `state/runlog.json`.
-   Take the **last** element of `runs`.
-4. **Condition** on `status`:
-   - **`generated`** → **Office 365 Outlook → Send an email (V2)**
-     - To: `fredman08@users.noreply.github.com`
-     - Subject: `CCPlus v{version} published — {summary}`
-     - Body: include the summary and the link
-       `https://fredman08.github.io/CCPlus/artifacts/CCPlus_{timestamp}.html`
-       plus the index `https://fredman08.github.io/CCPlus/`.
-   - **`no-update`** → **Send an email (V2)**
-     - Subject: `CCPlus — no significant Claude Code updates this week`
-     - Body: the `note` field from the run.
-5. **Save** and test with **Run** after the next routine run (or trigger the routine "Run now").
+At <https://make.powerautomate.com> → **+ Create → Instant cloud flow** →
+**Skip** (choose trigger manually):
 
-> Tip: to avoid duplicate emails on unrelated commits, add a condition that the pushed paths
-> include `state/runlog.json`, or compare the run `timestamp` against the last one you emailed
-> (store it in a flow variable / environment variable).
+1. **Trigger:** search **"When a HTTP request is received"** (Request). Open it and paste this
+   into **Request Body JSON Schema**:
+   ```json
+   {
+     "type": "object",
+     "properties": {
+       "status":    { "type": "string" },
+       "version":   { "type": "string" },
+       "subject":   { "type": "string" },
+       "summary":   { "type": "string" },
+       "url":       { "type": "string" },
+       "timestamp": { "type": "string" }
+     }
+   }
+   ```
+2. **Action:** **+ New step** → **Office 365 Outlook** → **Send an email (V2)**:
+   - **To:** `fredman08@users.noreply.github.com`
+   - **Subject:** insert the `subject` dynamic field.
+   - **Body:** type a line then insert dynamic fields, e.g.
+     `{summary}` … `View: {url}` … `(status: {status}, run {timestamp})`.
+3. **Save.** Reopen the trigger and copy the generated **HTTP POST URL** (a long
+   `https://prod-…logic.azure.com/…?sig=…` link). Treat it like a secret.
+
+### B2. Give the workflow the URL
+
+Add it as a repo secret (from a terminal, hidden input):
+```powershell
+gh secret set PA_WEBHOOK_URL --repo fredman08/CCPlus
+```
+(or via the GitHub web UI → Settings → Secrets → Actions). Done — the next run emails you.
+
+### B3. Test
+
+Actions tab → **CCPlus weekly** → **Run workflow**. You should receive an email within a minute
+("no significant updates" if nothing changed). To test the "new version" email, run it with the
+**force** input checked.
+
+> Notes: the email fires whether or not a new artifact was produced. If the **Request** trigger
+> isn't available on your license, the simplest alternative is to skip Power Automate and let
+> **GitHub email you** — Watch the repo (top-right **Watch → All Activity**) so you're notified on
+> each `ccplus-bot` commit and new Release.
 
 ---
 
@@ -72,7 +95,8 @@ Build it at <https://make.powerautomate.com> → **+ Create → Automated cloud 
 
 - **In any Claude Code session** (VSCode or CLI) opened on this repo: run **`/ccplus`** (force a
   build with `/ccplus force`). See `.claude/skills/ccplus/SKILL.md`.
-- **From the routines page:** use **Run once now**.
+- **GitHub Actions:** Actions tab → **CCPlus weekly** → **Run workflow** (check **force** to build
+  even with no significant updates).
 
 ---
 
