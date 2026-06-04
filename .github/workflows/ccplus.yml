@@ -58,6 +58,8 @@ jobs:
           # Provide whichever credential you configured (one is enough):
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Use the workflow's built-in token so we don't need the Claude GitHub App installed:
+          github_token: ${{ github.token }}
           claude_args: "--model opus --allowedTools Read,Write,Edit,WebFetch,Bash,Glob,Grep"
           prompt: |
             You are running the CCPlus pipeline in CI. Follow prompts/generate-ccplus.md exactly,
