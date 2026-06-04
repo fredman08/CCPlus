@@ -22,6 +22,7 @@ on:
 permissions:
   contents: write                # commit/push the new artifact + state, create releases
   id-token: write                # required by claude-code-action (OIDC token)
+  issues: write                  # post run-log notifications as issue comments
 
 concurrency:
   group: ccplus
@@ -95,47 +96,41 @@ jobs:
               || echo "release step skipped"
           fi
 
-      # Emails you the result of every run (new version OR "no significant updates") by POSTing
-      # the latest runlog entry to a Power Automate flow. No-ops until PA_WEBHOOK_URL is set.
-      - name: Notify via Power Automate (Outlook email)
+      # Posts one comment per run to a single rolling "CCPlus run log" issue. GitHub emails repo
+      # watchers (Watch -> All Activity) on issue comments, so you get an email for EVERY run —
+      # both new-version and "no significant updates". Non-fatal. See SETUP.md section B.
+      - name: Notify via GitHub issue comment
         if: always()
         env:
-          PA_WEBHOOK_URL: ${{ secrets.PA_WEBHOOK_URL }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SITE: "https://fredman08.github.io/CCPlus/"
         run: |
-          if [ -z "$PA_WEBHOOK_URL" ]; then
-            echo "::notice title=No email sent::PA_WEBHOOK_URL secret not set. See SETUP.md section B."
-            exit 0
+          LAST=$(jq -c '.runs[-1]' state/runlog.json)
+          STATUS=$(echo "$LAST" | jq -r '.status')
+          TS=$(echo "$LAST" | jq -r '.timestamp')
+          if [ "$STATUS" = "generated" ]; then
+            VER=$(echo "$LAST" | jq -r '.version // "?"')
+            ART=$(echo "$LAST" | jq -r '.artifact // ""')
+            MSG=$(echo "$LAST" | jq -r '.summary // ""')
+            TITLE="CCPlus v$VER published — new Claude Code updates"
+            URL="${SITE}artifacts/$(basename "$ART")"
+          else
+            MSG=$(echo "$LAST" | jq -r '.note // ""')
+            TITLE="CCPlus — no significant Claude Code updates"
+            URL="$SITE"
           fi
-          python3 - <<'PY'
-          import json, os, urllib.request
-          run = json.load(open("state/runlog.json"))["runs"][-1]
-          site = "https://fredman08.github.io/CCPlus/"
-          if run.get("status") == "generated":
-              art = os.path.basename(run.get("artifact", ""))
-              url = site + "artifacts/" + art if art else site
-              subject = f"CCPlus v{run.get('version','?')} published — new Claude Code updates"
-              body = run.get("summary", "")
-          else:
-              url = site
-              subject = "CCPlus — no significant Claude Code updates this week"
-              body = run.get("note", "")
-          payload = {
-              "status": run.get("status", ""),
-              "version": run.get("version", ""),
-              "subject": subject,
-              "summary": body,
-              "url": url,
-              "timestamp": run.get("timestamp", ""),
-          }
-          req = urllib.request.Request(
-              os.environ["PA_WEBHOOK_URL"],
-              data=json.dumps(payload).encode(),
-              headers={"Content-Type": "application/json"},
-          )
-          try:
-              with urllib.request.urlopen(req, timeout=30) as r:
-                  print("Notified Power Automate:", r.status, "-", subject)
-          except Exception as e:
-              # Non-fatal: a notification failure must not fail the pipeline.
-              print(f"::warning title=Email notification failed::{e}. Check PA_WEBHOOK_URL (must be the full Power Automate HTTP POST URL including the sig= signature).")
-          PY
+          gh label create ccplus-runlog --repo "$REPO" --color D97757 \
+            --description "CCPlus run notifications" >/dev/null 2>&1 || true
+          NUM=$(gh issue list --repo "$REPO" --label ccplus-runlog --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          if [ -z "$NUM" ]; then
+            OUT=$(gh issue create --repo "$REPO" --title "📋 CCPlus run log" --label ccplus-runlog \
+              --body "One comment is posted here per CCPlus run (weekly + on-demand). **Watch** this repo (top-right → Watch → All Activity) to receive them by email.")
+            NUM=$(echo "$OUT" | grep -oE '[0-9]+$')
+          fi
+          BODY=$(printf '### %s\n\n%s\n\n**View:** %s\n\n_status: %s · run: %s_' \
+            "$TITLE" "$MSG" "$URL" "$STATUS" "$TS")
+          gh issue comment "$NUM" --repo "$REPO" --body "$BODY" \
+            && echo "Commented on issue #$NUM" \
+            || echo "::warning title=Notification failed::Could not comment on the run-log issue."

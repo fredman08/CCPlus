@@ -35,59 +35,33 @@ routine-run cap. View run history on the routines page.
 
 ---
 
-## B. Outlook email notifications (Power Automate webhook)
+## B. Email notifications (GitHub Watch — no Power Automate / no premium)
 
-The GitHub workflow POSTs each run's summary to a Power Automate flow, which emails you. This
-uses only **standard** connectors (works on a free Power Automate license), fires for both
-scheduled and on-demand runs, and needs just two actions. The workflow step is already in
-`.github/workflows/ccplus.yml` — it stays dormant until the `PA_WEBHOOK_URL` secret is set.
+The workflow posts one comment per run to a single rolling **"📋 CCPlus run log"** issue (it
+creates the issue automatically on the first run). GitHub emails repo watchers on issue
+comments, so you get an email for **every** run — both new-version and "no significant updates".
+New versions additionally create a GitHub **Release** (also emailed). This needs no Power
+Automate and no premium connector.
 
-### B1. Build the flow (in Power Automate)
+### B1. Turn on watching (one-time)
 
-At <https://make.powerautomate.com> → **+ Create → Instant cloud flow** →
-**Skip** (choose trigger manually):
+1. Open <https://github.com/fredman08/CCPlus>.
+2. Top-right **Watch** → **All Activity**. (This subscribes you to issues, comments, and releases.)
+3. Confirm GitHub emails go where you want: <https://github.com/settings/notifications> →
+   **Watching** → enable **Email**; and <https://github.com/settings/emails> → make sure the
+   address you check is your primary/verified GitHub email.
 
-1. **Trigger:** search **"When a HTTP request is received"** (Request). Open it and paste this
-   into **Request Body JSON Schema**:
-   ```json
-   {
-     "type": "object",
-     "properties": {
-       "status":    { "type": "string" },
-       "version":   { "type": "string" },
-       "subject":   { "type": "string" },
-       "summary":   { "type": "string" },
-       "url":       { "type": "string" },
-       "timestamp": { "type": "string" }
-     }
-   }
-   ```
-2. **Action:** **+ New step** → **Office 365 Outlook** → **Send an email (V2)**:
-   - **To:** `fredman08@users.noreply.github.com`
-   - **Subject:** insert the `subject` dynamic field.
-   - **Body:** type a line then insert dynamic fields, e.g.
-     `{summary}` … `View: {url}` … `(status: {status}, run {timestamp})`.
-3. **Save.** Reopen the trigger and copy the generated **HTTP POST URL** (a long
-   `https://prod-…logic.azure.com/…?sig=…` link). Treat it like a secret.
+### B2. Test
 
-### B2. Give the workflow the URL
+Actions tab → **CCPlus weekly** → **Run workflow**. Within a minute you should get an email for a
+new comment on the run-log issue ("no significant updates" if nothing changed). To test the
+"new version" path, run it with the **force** input checked (also creates a Release email).
 
-Add it as a repo secret (from a terminal, hidden input):
-```powershell
-gh secret set PA_WEBHOOK_URL --repo fredman08/CCPlus
-```
-(or via the GitHub web UI → Settings → Secrets → Actions). Done — the next run emails you.
-
-### B3. Test
-
-Actions tab → **CCPlus weekly** → **Run workflow**. You should receive an email within a minute
-("no significant updates" if nothing changed). To test the "new version" email, run it with the
-**force** input checked.
-
-> Notes: the email fires whether or not a new artifact was produced. If the **Request** trigger
-> isn't available on your license, the simplest alternative is to skip Power Automate and let
-> **GitHub email you** — Watch the repo (top-right **Watch → All Activity**) so you're notified on
-> each `ccplus-bot` commit and new Release.
+> Notes: GitHub does **not** email you for activity *you* triggered, so a manual run you start
+> yourself may not notify you — but the **scheduled** Monday runs will. Plain commits/pushes do
+> not generate emails, which is why notifications go through the run-log **issue** (and Releases),
+> not the commit. The old Power Automate `PA_WEBHOOK_URL` secret is no longer used and can be
+> deleted: `gh secret delete PA_WEBHOOK_URL --repo fredman08/CCPlus`.
 
 ---
 
