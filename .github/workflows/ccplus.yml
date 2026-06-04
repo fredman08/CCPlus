@@ -132,6 +132,10 @@ jobs:
               data=json.dumps(payload).encode(),
               headers={"Content-Type": "application/json"},
           )
-          with urllib.request.urlopen(req, timeout=30) as r:
-              print("Notified Power Automate:", r.status, "-", subject)
+          try:
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  print("Notified Power Automate:", r.status, "-", subject)
+          except Exception as e:
+              # Non-fatal: a notification failure must not fail the pipeline.
+              print(f"::warning title=Email notification failed::{e}. Check PA_WEBHOOK_URL (must be the full Power Automate HTTP POST URL including the sig= signature).")
           PY
