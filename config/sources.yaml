@@ -1,0 +1,100 @@
+# CCPlus source list.
+# In Plan A (native Routine) the generator reads these directly via WebSearch/WebFetch.
+# The same list drives the scripted gather step in the Plan C (GitHub Actions) fallback.
+#
+# Each source: name, url, type (authoritative|community), weight (1=low .. 5=high),
+# method (how to fetch it), notes.
+
+authoritative:
+  - name: Claude Code release notes
+    url: https://code.claude.com/docs/en/release-notes
+    type: authoritative
+    weight: 5
+    method: webfetch
+    notes: Primary signal for new features/defaults/flags/config changes.
+
+  - name: Claude Code docs
+    url: https://code.claude.com/docs
+    type: authoritative
+    weight: 5
+    method: webfetch
+    notes: Use llms.txt index (https://code.claude.com/docs/llms.txt) to find changed pages.
+
+  - name: Claude / Anthropic API docs & changelog
+    url: https://docs.claude.com
+    type: authoritative
+    weight: 4
+    method: webfetch
+    notes: Model releases, capability/limit changes, new API features.
+
+  - name: Anthropic news & engineering blog
+    url: https://www.anthropic.com/news
+    type: authoritative
+    weight: 4
+    method: webfetch
+    notes: Official announcements, model updates, best-practice posts.
+
+  - name: Claude Code GitHub releases
+    url: https://github.com/anthropics/claude-code/releases
+    type: authoritative
+    weight: 5
+    method: github_api
+    notes: GET /repos/anthropics/claude-code/releases — version changelogs.
+
+  - name: Local install version
+    url: cli://claude --version
+    type: authoritative
+    weight: 3
+    method: cli
+    notes: Compare against latest release to detect "behind" state (local runs only).
+
+community:
+  - name: Claude Code GitHub discussions/issues
+    url: https://github.com/anthropics/claude-code/discussions
+    type: community
+    weight: 3
+    method: github_api
+    notes: Workarounds, confirmed tips, common pitfalls.
+
+  - name: Hacker News (Algolia)
+    url: https://hn.algolia.com/api/v1/search_by_date?query=claude%20code&tags=story
+    type: community
+    weight: 2
+    method: rest
+    notes: Filter to last 7 days; corroborate before including.
+
+  - name: Reddit r/ClaudeAI
+    url: https://www.reddit.com/r/ClaudeAI/top.json?t=week
+    type: community
+    weight: 2
+    method: rest
+    notes: Real-world tips/tricks; require corroboration for "hacks".
+
+  - name: Reddit r/LocalLLaMA
+    url: https://www.reddit.com/r/LocalLLaMA/search.json?q=claude+code&restrict_sr=1&sort=new
+    type: community
+    weight: 1
+    method: rest
+    notes: Occasional Claude Code workflow discussion.
+
+  - name: awesome-claude-code lists
+    url: https://github.com/search?q=awesome-claude-code&type=repositories
+    type: community
+    weight: 2
+    method: webfetch
+    notes: Curated commands/skills/hooks; verify items still valid.
+
+  - name: Expert newsletters / X authorities / YouTube
+    url: https://www.google.com/search?q=claude+code+tips+tricks
+    type: community
+    weight: 2
+    method: websearch
+    notes: Use WebSearch; prefer multi-source corroboration; YouTube transcripts optional.
+
+# Search seeds used by WebSearch when sweeping for new techniques.
+search_seeds:
+  - "Claude Code new features {month} {year}"
+  - "Claude Code tips and tricks {year}"
+  - "Claude Code hooks skills MCP best practices"
+  - "Claude Code settings.json configuration recommendations"
+  - "Claude Code subagents output styles statusline"

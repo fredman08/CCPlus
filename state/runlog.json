@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "runs": [
+    {
+      "timestamp": "2026-06-04_1803",
+      "status": "generated",
+      "version": "1.0",
+      "artifact": "docs/artifacts/CCPlus_2026-06-04_1803.html",
+      "new_items": 14,
+      "checked_sources": 4,
+      "generated_by": "claude-opus-4-8",
+      "review_verdict": "pass_with_edits",
+      "summary": "v1.0 baseline generated and cross-model reviewed."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "latest_cli_version": "2.1.162",
+  "latest_changelog_date": "2026-06-03",
+  "versions": [
+    {
+      "version": "1.0",
+      "timestamp": "2026-06-04_1803",
+      "artifact": "docs/artifacts/CCPlus_2026-06-04_1803.html",
+      "generated_by": "claude-opus-4-8",
+      "reviewed_by": "claude-sonnet-4-6",
+      "review_verdict": "pass_with_edits",
+      "summary": "Baseline: recommended default Claude Code config + release state (CLI v2.1.162, Opus 4.8), tips, hacks, starter settings.json/CLAUDE.md."
+    }
+  ],
+  "items": [
+    "release:v2.1.162",
+    "release:v2.1.161",
+    "release:v2.1.160:ultracode",
+    "release:v2.1.158:auto-mode-bedrock-vertex-foundry",
+    "release:v2.1.157:skills-plugins-autoload",
+    "release:v2.1.154:opus-4-8",
+    "release:v2.1.154:dynamic-workflows",
+    "release:v2.1.154:lean-system-prompt",
+    "release:v2.1.154:simplify-cleanup",
+    "release:v2.1.152:auto-mode-default",
+    "release:v2.1.152:code-review-fix",
+    "release:v2.1.152:messagedisplay-hook",
+    "doc:settings",
+    "doc:memory",
+    "doc:model-config"
+  ]
+}

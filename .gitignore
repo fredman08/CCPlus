@@ -1,0 +1,25 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Claude Code session metadata (keep the skill, ignore local state)
+.claude/settings.json
+.claude/settings.local.json
+.claude/projects/
+.claude/sessions/
+.claude/shell-snapshots/
+.claude/todos/
+
+# Python (Plan C fallback)
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.env
+.env
+
+# Scratch
+*.tmp
+gathered.json
+eval.json

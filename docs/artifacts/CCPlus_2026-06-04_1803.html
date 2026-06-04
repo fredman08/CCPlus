@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCPlus v1.0 — What's New in Claude Code</title>
+<style>
+  :root{
+    --bg:#F5F4EE; --panel:#FBFAF6; --ink:#1A1A19; --muted:#6B6963;
+    --accent:#D97757; --accent-ink:#B85C3E; --line:#E4E1D6; --code:#EEEBDF;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:780px; margin:0 auto; padding:56px 24px 96px}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",ui-serif,serif; font-weight:600; line-height:1.2; letter-spacing:-0.01em}
+  h1{font-size:2.5rem; margin:0 0 8px}
+  h2{font-size:1.5rem; margin:48px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:1.15rem; margin:28px 0 6px}
+  a{color:var(--accent-ink); text-decoration:underline; text-underline-offset:2px}
+  a:hover{color:var(--accent)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 14px; padding-left:1.3em}
+  li{margin:6px 0}
+  code{background:var(--code); padding:2px 6px; border-radius:5px; font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace; font-size:0.88em}
+  pre{background:var(--code); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow:auto}
+  pre code{background:none; padding:0}
+  sup a{text-decoration:none; font-weight:600; color:var(--accent-ink)}
+  .badge{display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:999px; vertical-align:middle}
+  .meta{color:var(--muted); font-size:.92rem; margin:0 0 4px}
+  .review{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:24px 0; font-size:.95rem}
+  .callout{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:16px 0}
+  .tag{font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--accent-ink)}
+  header.doc{border-bottom:2px solid var(--line); padding-bottom:24px; margin-bottom:8px}
+  footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem}
+  .refs{font-size:.9rem}
+  .refs li{margin:8px 0}
+  .toc{font-size:.92rem; color:var(--muted)}
+  .toc a{color:var(--muted)}
+  hr{border:none; border-top:1px solid var(--line); margin:32px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="doc">
+    <p class="meta"><span class="badge">CCPlus</span> &nbsp; v1.0</p>
+    <h1>What's New in Claude Code</h1>
+    <p class="meta">Generated June 04, 2026 at 18:03 (MPST) · by Claude Opus 4.8 · prior version: none (baseline)</p>
+  </header>
+
+  <div class="review">✓ Reviewed by Claude Sonnet 4.6 — <strong>pass_with_edits</strong> (cross-model accuracy review applied; see History Log)</div>
+
+  <nav class="toc">
+    <strong>Contents:</strong>
+    <a href="#summary">Summary</a> ·
+    <a href="#whats-new">What's New</a> ·
+    <a href="#tips">Tips &amp; Techniques</a> ·
+    <a href="#hacks">Hacks</a> ·
+    <a href="#config">Recommended Default-Config Changes</a> ·
+    <a href="#history">History Log</a> ·
+    <a href="#references">References</a>
+  </nav>
+
+  <h2 id="summary">Summary</h2>
+  <p>This is the <strong>v1.0 baseline</strong> of CCPlus — a snapshot of recommended Claude Code
+  defaults and the most relevant recent changes as of June 4, 2026. The current Claude Code CLI
+  is <strong>v2.1.162</strong> (released Jun 3)<sup><a href="#ref1">[1]</a></sup>, and the latest
+  reasoning model is <strong>Claude Opus 4.8</strong>, which shipped in CLI v2.1.154 and requires
+  that version or later<sup><a href="#ref1">[1]</a></sup><sup><a href="#ref4">[4]</a></sup>. The
+  default model depends on your plan: <strong>Enterprise subscription seats default to Sonnet
+  4.6</strong>, while Max, Team Premium, Enterprise pay-as-you-go, and the Anthropic API default
+  to Opus 4.8<sup><a href="#ref4">[4]</a></sup>. Recent releases emphasize multi-agent
+  orchestration (<em>dynamic workflows</em>), a leaner default system prompt, auto mode becoming
+  the default approval flow, and skills/plugins that auto-load from
+  <code>.claude/skills</code><sup><a href="#ref1">[1]</a></sup>. The sections below capture
+  what's new, durable tips, lesser-known power techniques, and a concrete starter configuration
+  for the default Claude Code setup. Every claim is cited; sources are listed at the bottom.</p>
+
+  <h2 id="whats-new">What's New</h2>
+  <p class="meta">Highlights from Claude Code CLI v2.1.152 → v2.1.162 (late May – early June 2026)<sup><a href="#ref1">[1]</a></sup>.</p>
+  <ul>
+    <li><strong>Claude Opus 4.8</strong> (v2.1.154) — released with a <code>high</code> effort
+      default; <strong>Fast mode</strong> on Opus 4.8 runs at 2× the standard rate for ~2.5×
+      speed<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong>Dynamic workflows</strong> (v2.1.154) — Claude can orchestrate work across tens to
+      hundreds of agents for substantive tasks<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong><code>ultracode</code> setting</strong> (v2.1.160) — a session-only Claude Code
+      setting (not a model effort level) that sends <code>xhigh</code> to the model and additionally
+      orchestrates dynamic workflows for each substantive task; set via <code>/effort</code> or
+      <code>--settings</code><sup><a href="#ref1">[1]</a></sup><sup><a href="#ref4">[4]</a></sup>.</li>
+    <li><strong>Lean system prompt is now the default</strong> (v2.1.154), except on
+      Haiku/Sonnet/4.7-era models<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong>Auto mode no longer requires opt-in consent</strong> (v2.1.152), and auto mode is
+      now available on Bedrock, Vertex, and Foundry for Opus 4.7+ via
+      <code>CLAUDE_CODE_ENABLE_AUTO_MODE=1</code> (v2.1.158)<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong>Skills &amp; plugins auto-load</strong> — plugins placed in
+      <code>.claude/skills</code> load automatically, and <code>claude plugin init &lt;name&gt;</code>
+      scaffolds a new plugin (v2.1.157)<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong>Review tooling</strong> — <code>/code-review --fix</code> applies findings to the
+      working tree (v2.1.152), and <code>/simplify</code> became a cleanup-only review with
+      auto-fix (v2.1.154)<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong>New safety prompts</strong> — Claude Code now prompts before writing to shell
+      startup files and git config, and <code>acceptEdits</code> mode prompts before writing
+      build-tool config files (v2.1.160)<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong>New hooks &amp; skill reloading</strong> — a <code>MessageDisplay</code> hook can
+      transform assistant messages, <code>/reload-skills</code> re-scans skill directories, and
+      <code>SessionStart</code> hooks can set <code>reloadSkills: true</code> and a
+      <code>sessionTitle</code> (v2.1.152)<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong>Agent view improvements</strong> — <code>claude agents</code> now shows
+      <code>done/total</code> for fanned-out work and a PR column; Remote Control appears as a
+      persistent footer pill (v2.1.161–162)<sup><a href="#ref1">[1]</a></sup>.</li>
+  </ul>
+
+  <h2 id="tips">Tips &amp; Techniques</h2>
+  <ul>
+    <li><strong>Bootstrap project memory with <code>/init</code>.</strong> It analyzes your
+      codebase and writes a starter <code>CLAUDE.md</code> with build/test commands and
+      conventions; if one exists it suggests improvements rather than overwriting. Set
+      <code>CLAUDE_CODE_NEW_INIT=1</code> for an interactive multi-phase flow that also offers to
+      set up skills and hooks<sup><a href="#ref3">[3]</a></sup>.</li>
+    <li><strong>Use <code>opusplan</code> for plan-heavy work.</strong> It runs Opus during plan
+      mode for reasoning/architecture, then automatically switches to Sonnet for
+      execution<sup><a href="#ref4">[4]</a></sup>.</li>
+    <li><strong>Tune reasoning with <code>/effort</code>.</strong> Opus 4.8 supports
+      <code>low</code>, <code>medium</code>, <code>high</code> (default), <code>xhigh</code>, and
+      <code>max</code>. Drop one-off <code>ultrathink</code> into a prompt for deeper reasoning on
+      that turn only<sup><a href="#ref4">[4]</a></sup>.</li>
+    <li><strong>Keep <code>CLAUDE.md</code> under ~200 lines</strong> and specific
+      ("Use 2-space indentation", "Run <code>npm test</code> before committing"). Longer files
+      consume more context and reduce adherence<sup><a href="#ref3">[3]</a></sup>.</li>
+    <li><strong>Scope instructions with <code>.claude/rules/</code>.</strong> Path-scoped rules
+      (YAML <code>paths:</code> frontmatter) load only when Claude touches matching files, saving
+      context vs. putting everything in <code>CLAUDE.md</code><sup><a href="#ref3">[3]</a></sup>.</li>
+    <li><strong>Add the settings JSON schema</strong> for editor autocomplete:
+      <code>"$schema": "https://json.schemastore.org/claude-code-settings.json"</code><sup><a href="#ref2">[2]</a></sup>.</li>
+    <li><strong>Audit what Claude remembers</strong> with <code>/memory</code> — it lists loaded
+      <code>CLAUDE.md</code>/rules files and lets you browse auto-memory (on by default since
+      v2.1.59)<sup><a href="#ref3">[3]</a></sup>.</li>
+    <li><strong>Enforce hard rules with hooks, not prose.</strong> <code>CLAUDE.md</code> is
+      context (not guaranteed compliance); for "must happen" actions like running a linter before
+      commit, use a <code>PreToolUse</code> hook<sup><a href="#ref3">[3]</a></sup>.</li>
+    <li><strong>1M-token context</strong> is auto-enabled for Opus on Max/Team/Enterprise plans;
+      Sonnet 1M requires usage credits. Append <code>[1m]</code> to a model alias for long
+      sessions (e.g. <code>/model opus[1m]</code>)<sup><a href="#ref4">[4]</a></sup>.</li>
+  </ul>
+
+  <h2 id="hacks">Hacks</h2>
+  <p class="meta">Lesser-known but documented power-user techniques.</p>
+  <ul>
+    <li><strong>Leave maintainer notes for free.</strong> Block-level HTML comments
+      (<code>&lt;!-- ... --&gt;</code>) in <code>CLAUDE.md</code> are stripped before the content
+      enters context, so they cost zero tokens<sup><a href="#ref3">[3]</a></sup>.</li>
+    <li><strong>Import files into <code>CLAUDE.md</code></strong> with <code>@path</code> syntax
+      (e.g. <code>@README</code>, <code>@package.json</code>) instead of duplicating content; up
+      to four levels deep<sup><a href="#ref3">[3]</a></sup>.</li>
+    <li><strong>Force a cheaper model for all subagents</strong> with
+      <code>CLAUDE_CODE_SUBAGENT_MODEL</code> — it overrides per-invocation model choices for
+      fan-out work (set to <code>inherit</code> to revert)<sup><a href="#ref4">[4]</a></sup>.</li>
+    <li><strong>Run background shell sessions</strong> with
+      <code>claude --bg --exec '&lt;command&gt;'</code> (v2.1.154)<sup><a href="#ref1">[1]</a></sup>.</li>
+    <li><strong>Reuse an existing <code>AGENTS.md</code>.</strong> Claude reads
+      <code>CLAUDE.md</code>, not <code>AGENTS.md</code> — create a <code>CLAUDE.md</code> that
+      does <code>@AGENTS.md</code> so both tools share one source of truth (on Windows, prefer the
+      import over a symlink)<sup><a href="#ref3">[3]</a></sup>.</li>
+  </ul>
+
+  <h2 id="config">Recommended Default-Config Changes</h2>
+  <p>A starter <code>~/.claude/settings.json</code> (user scope) for a strong default setup. On a
+  managed/Enterprise machine, <strong>managed settings take precedence</strong> and may restrict
+  models or permissions — these are user-level suggestions that apply where policy
+  allows<sup><a href="#ref2">[2]</a></sup><sup><a href="#ref4">[4]</a></sup>.</p>
+  <pre><code>{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opusplan",
+  "effortLevel": "high",
+  "outputStyle": "default",
+  "statusLine": { "type": "command", "command": "~/.claude/statusline.sh" },
+  "permissions": {
+    "allow": [
+      "Bash(git status)", "Bash(git diff *)", "Bash(git log *)",
+      "Bash(npm run lint)", "Bash(npm run test *)"
+    ],
+    "deny": [
+      "Read(./.env)", "Read(./secrets/**)", "Bash(curl *)"
+    ]
+  },
+  "attribution": { "commit": "🤖 Generated with Claude Code" }
+}</code></pre>
+  <p class="meta">Notes: <code>opusplan</code> gives Opus-quality planning with Sonnet-speed
+  execution<sup><a href="#ref4">[4]</a></sup>; on an Enterprise <em>subscription</em> seat the
+  Default model is Sonnet 4.6, and Claude Code may fall back to Sonnet if you hit an Opus usage
+  threshold<sup><a href="#ref4">[4]</a></sup>. <code>outputStyle</code> changes take effect after
+  <code>/clear</code> or restart; <code>model</code> can also be switched mid-session with
+  <code>/model</code><sup><a href="#ref2">[2]</a></sup>.</p>
+
+  <h3>A starter <code>CLAUDE.md</code></h3>
+  <pre><code># Project: &lt;name&gt;
+
+## Commands
+- Build: &lt;cmd&gt;
+- Test: &lt;cmd&gt;   # run before committing
+- Lint: &lt;cmd&gt;
+
+## Conventions
+- &lt;language/style rules — be specific, e.g. "2-space indentation"&gt;
+- Source layout: &lt;where handlers/components/tests live&gt;
+
+## Workflow
+- Use plan mode for changes under &lt;sensitive dir&gt;.
+- Commit frequently with clear messages.</code></pre>
+  <p class="meta">Keep it under ~200 lines; move path-specific guidance into
+  <code>.claude/rules/</code> and repeatable procedures into skills<sup><a href="#ref3">[3]</a></sup>.</p>
+
+  <h3>Built-in slash commands worth knowing early</h3>
+  <ul>
+    <li><code>/init</code> — generate or improve <code>CLAUDE.md</code><sup><a href="#ref3">[3]</a></sup></li>
+    <li><code>/model</code>, <code>/effort</code> — switch model / reasoning depth<sup><a href="#ref4">[4]</a></sup></li>
+    <li><code>/memory</code> — view &amp; edit loaded instructions and auto-memory<sup><a href="#ref3">[3]</a></sup></li>
+    <li><code>/code-review</code> (add <code>--fix</code>) and <code>/simplify</code> — review &amp; cleanup<sup><a href="#ref1">[1]</a></sup></li>
+    <li><code>/config</code>, <code>/status</code> — settings &amp; account/model info<sup><a href="#ref2">[2]</a></sup><sup><a href="#ref4">[4]</a></sup></li>
+  </ul>
+
+  <h3>Good habits</h3>
+  <ul>
+    <li>Scope tasks tightly and use plan mode for risky changes.</li>
+    <li>Commit frequently; review Claude's diffs before accepting.</li>
+    <li>Add a correction to <code>CLAUDE.md</code> the second time you repeat it<sup><a href="#ref3">[3]</a></sup>.</li>
+    <li>Prefer hooks for must-run steps; prefer skills for repeatable multi-step procedures<sup><a href="#ref3">[3]</a></sup>.</li>
+  </ul>
+
+  <h2 id="history">History Log</h2>
+  <div class="callout">
+    <p><span class="tag">v1.0 — June 4, 2026</span></p>
+    <p>Initial baseline. Establishes the recommended default Claude Code configuration and captures
+    the state of releases (CLI v2.1.162, Opus 4.8) and best practices as of the generation date.
+    No prior version to diff against — future CCPlus versions will list only what changed since the
+    previous version here.</p>
+    <p class="meta"><strong>Cross-model review:</strong> generated by Claude Opus 4.8, reviewed by
+    Claude Sonnet 4.6 (verdict: <em>pass_with_edits</em>). Two corrections were applied:
+    (1) the <code>ultracode</code> setting was split out as a v2.1.160 Claude Code setting — not a
+    model effort level, and distinct from dynamic workflows (v2.1.154); (2) clarified that only
+    <code>outputStyle</code> requires <code>/clear</code> or restart, while <code>model</code> can
+    be switched mid-session. Model-default-by-tier (Enterprise subscription seats → Sonnet 4.6) and
+    Opus 4.8 requiring CLI v2.1.154+ were confirmed accurate.</p>
+  </div>
+
+  <h2 id="references">References</h2>
+  <ol class="refs">
+    <li id="ref1"><strong>Claude Code releases</strong> — anthropics/claude-code GitHub Releases (v2.1.152–v2.1.162). <a href="https://github.com/anthropics/claude-code/releases">github.com/anthropics/claude-code/releases</a>. Accessed June 4, 2026.</li>
+    <li id="ref2"><strong>Claude Code settings</strong> — Anthropic docs. <a href="https://code.claude.com/docs/en/settings">code.claude.com/docs/en/settings</a>. Accessed June 4, 2026.</li>
+    <li id="ref3"><strong>How Claude remembers your project (memory &amp; CLAUDE.md)</strong> — Anthropic docs. <a href="https://code.claude.com/docs/en/memory">code.claude.com/docs/en/memory</a>. Accessed June 4, 2026.</li>
+    <li id="ref4"><strong>Model configuration</strong> — Anthropic docs. <a href="https://code.claude.com/docs/en/model-config">code.claude.com/docs/en/model-config</a>. Accessed June 4, 2026.</li>
+  </ol>
+
+  <footer>
+    CCPlus is generated with Claude Code. Content is paraphrased from the cited public sources
+    above; access dates are listed per reference. Reviewed by Claude Sonnet 4.6 — pass_with_edits.
+  </footer>
+
+</div>
+</body>
+</html>

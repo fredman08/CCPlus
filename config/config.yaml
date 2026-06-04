@@ -1,0 +1,49 @@
+# CCPlus pipeline configuration. Tunable; the generator reads this each run.
+
+artifact:
+  name_prefix: CCPlus
+  timestamp_format: "%Y-%m-%d_%H%M"      # -> CCPlus_2026-06-04_1730.html
+  output_dir: docs/artifacts
+  index: docs/index.html
+  template: templates/template.html
+
+models:
+  # The routine runs on `generator`; the reviewer is always the *other* model.
+  generator: opus           # claude-opus-4-8
+  reviewer: sonnet          # claude-sonnet-4-6
+  # If the routine is forced to run on Sonnet, swap these (reviewer must be opus).
+
+schedule:
+  cron: "0 13 * * 1"        # Mondays 13:00 local; set timezone when creating the routine
+  timezone: Asia/Manila
+
+# What counts as "significant" enough to generate a new artifact.
+significance:
+  # Generate if ANY of these is true for a NEW (not-yet-seen) item:
+  generate_if:
+    - "Claude Code release changes/adds features, defaults, flags, or config (not pure bugfix)"
+    - "New official Anthropic guidance relevant to optimizing the default Claude Code config"
+    - "New default model for Enterprise, or a meaningful capability/limit change"
+    - "A community technique widely corroborated (>=2 reputable sources) that materially improves the default workflow"
+  # Treat as notify-only (do NOT generate) if ONLY these apply:
+  notify_only_if:
+    - "Cosmetic / typo / minor release notes"
+    - "Single-source or unverified hype with no reproducible method"
+    - "Already recorded in state/state.json"
+  # Numeric fallback gate when the qualitative rubric is ambiguous:
+  min_new_authoritative: 1
+  min_new_community: 3
+  community_corroboration_min: 2     # distinct sources required for a community 'hack'
+
+state:
+  ledger: state/state.json
+  runlog: state/runlog.json
+
+notify:
+  channel: outlook-email             # delivered by a Power Automate flow watching the repo
+  recipient: fredman08@users.noreply.github.com
+
+review:
+  verdicts: [pass, pass_with_edits, fail]
+  on_fail: regenerate                # regenerate once, then re-review
+  footer_stamp: "Reviewed by {model} — {verdict}"

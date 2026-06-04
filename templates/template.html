@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!--
+  CCPlus artifact template.
+  The generator copies this file to docs/artifacts/CCPlus_<timestamp>.html and replaces the
+  {{TOKENS}} below. Keep it self-contained (inline CSS, no external JS/CSS). Do not overwrite
+  an existing artifact file — always write a new timestamped copy.
+
+  Tokens:
+    {{VERSION}}        e.g. 1.0
+    {{GENERATED}}      e.g. June 04, 2026 at 18:03 MPST
+    {{MODEL}}          e.g. Claude Opus 4.8
+    {{REVIEW_STAMP}}   e.g. Reviewed by Claude Sonnet 4.6 — pass
+    {{PREV_VERSION}}   e.g. (none) or 1.3
+    {{SUMMARY}}        HTML
+    {{WHATS_NEW}}      HTML (list of items with [n] citations)
+    {{TIPS}}           HTML
+    {{HACKS}}          HTML
+    {{CONFIG}}         HTML
+    {{HISTORY}}        HTML
+    {{REFERENCES}}     HTML (ordered list)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCPlus v{{VERSION}} — What's New in Claude Code</title>
+<style>
+  :root{
+    --bg:#F5F4EE; --panel:#FBFAF6; --ink:#1A1A19; --muted:#6B6963;
+    --accent:#D97757; --accent-ink:#B85C3E; --line:#E4E1D6; --code:#EEEBDF;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:780px; margin:0 auto; padding:56px 24px 96px}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",ui-serif,serif; font-weight:600; line-height:1.2; letter-spacing:-0.01em}
+  h1{font-size:2.5rem; margin:0 0 8px}
+  h2{font-size:1.5rem; margin:48px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h3{font-size:1.15rem; margin:28px 0 6px}
+  a{color:var(--accent-ink); text-decoration:underline; text-underline-offset:2px}
+  a:hover{color:var(--accent)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 14px; padding-left:1.3em}
+  li{margin:6px 0}
+  code{background:var(--code); padding:2px 6px; border-radius:5px; font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace; font-size:0.88em}
+  pre{background:var(--code); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow:auto}
+  pre code{background:none; padding:0}
+  sup a{text-decoration:none; font-weight:600; color:var(--accent-ink)}
+  .badge{display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:999px; vertical-align:middle}
+  .meta{color:var(--muted); font-size:.92rem; margin:0 0 4px}
+  .review{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:24px 0; font-size:.95rem}
+  .callout{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:16px 0}
+  .tag{font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--accent-ink)}
+  header.doc{border-bottom:2px solid var(--line); padding-bottom:24px; margin-bottom:8px}
+  footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem}
+  .refs{font-size:.9rem}
+  .refs li{margin:8px 0}
+  .toc{font-size:.92rem; color:var(--muted)}
+  .toc a{color:var(--muted)}
+  hr{border:none; border-top:1px solid var(--line); margin:32px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="doc">
+    <p class="meta"><span class="badge">CCPlus</span> &nbsp; v{{VERSION}}</p>
+    <h1>What's New in Claude Code</h1>
+    <p class="meta">Generated {{GENERATED}} · by {{MODEL}} · prior version: {{PREV_VERSION}}</p>
+  </header>
+
+  <div class="review">✓ {{REVIEW_STAMP}}</div>
+
+  <nav class="toc">
+    <strong>Contents:</strong>
+    <a href="#summary">Summary</a> ·
+    <a href="#whats-new">What's New</a> ·
+    <a href="#tips">Tips &amp; Techniques</a> ·
+    <a href="#hacks">Hacks</a> ·
+    <a href="#config">Recommended Default-Config Changes</a> ·
+    <a href="#history">History Log</a> ·
+    <a href="#references">References</a>
+  </nav>
+
+  <h2 id="summary">Summary</h2>
+  {{SUMMARY}}
+
+  <h2 id="whats-new">What's New</h2>
+  {{WHATS_NEW}}
+
+  <h2 id="tips">Tips &amp; Techniques</h2>
+  {{TIPS}}
+
+  <h2 id="hacks">Hacks</h2>
+  {{HACKS}}
+
+  <h2 id="config">Recommended Default-Config Changes</h2>
+  {{CONFIG}}
+
+  <h2 id="history">History Log</h2>
+  {{HISTORY}}
+
+  <h2 id="references">References</h2>
+  <ol class="refs">
+    {{REFERENCES}}
+  </ol>
+
+  <footer>
+    CCPlus is generated with Claude Code. Content is paraphrased from the cited public sources
+    above; access dates are listed per reference. {{REVIEW_STAMP}}.
+  </footer>
+
+</div>
+</body>
+</html>
