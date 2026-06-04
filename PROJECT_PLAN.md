@@ -100,12 +100,16 @@ already in the state ledger.
   two corrections applied), published to Pages and Release `v1.0`.
 - `index.html`, `state.json`, `runlog.json` initialized; `/ccplus` skill and `SETUP.md` in place.
 
+**Engine note (June 2026):** Claude Code on the web / Routines are **disabled** for this account,
+so the active engine is **GitHub Actions** (`.github/workflows/ccplus.yml`), committed but dormant
+until a credential secret is added. `/ccplus` on demand works today.
+
 **Remaining (owner/admin actions — not automatable)**
-1. **Enable "Claude Code on the web"** (Anthropic org-side setting; admin requests via the
-   Anthropic account team). Hard gate for the Routine — check at https://claude.ai/code.
-2. **Create the weekly Routine** (claude.ai/code/routines): connect repo, model = Opus, Mon
-   13:00 Asia/Manila, allow unrestricted branch pushes. See `SETUP.md` §A.
-3. **Build the Power Automate Outlook flow** watching `state/runlog.json`. See `SETUP.md` §B.
+1. **Activate the engine** — add one secret to enable GitHub Actions: `ANTHROPIC_API_KEY` (PAYG),
+   `CLAUDE_CODE_OAUTH_TOKEN` (subscription), or wire Bedrock/Vertex creds. See `SETUP.md` §A2.
+   *(If web access is later enabled, switch to the no-key Routine instead — `SETUP.md` §A.)*
+2. **Build the Power Automate Outlook flow** watching `state/runlog.json`. See `SETUP.md` §B.
+3. *(Interim)* run `/ccplus` weekly on demand until automation is activated.
 
 ## 8. Fallbacks (if Claude Code on the web can't be enabled)
 

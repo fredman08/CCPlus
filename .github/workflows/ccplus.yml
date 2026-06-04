@@ -1,0 +1,93 @@
+name: CCPlus weekly
+
+# Runs the CCPlus generator weekly and on demand.
+#
+# DORMANT UNTIL A CREDENTIAL IS ADDED: the "generate" job only runs when the repo secret
+# ANTHROPIC_API_KEY (or CLAUDE_CODE_OAUTH_TOKEN) is present, so scheduled runs no-op cleanly
+# until you activate it. See SETUP.md "Activating GitHub Actions".
+#
+# Verify the claude-code-action version and input names against the current docs before
+# enabling (https://github.com/anthropics/claude-code-action) — the AI tooling moves weekly.
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"          # Mondays 05:00 UTC = 13:00 Asia/Manila
+  workflow_dispatch:             # manual "Run workflow" button (the on-demand trigger)
+    inputs:
+      force:
+        description: "Force generation even if no significant updates"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write                # commit/push the new artifact + state, create releases
+
+concurrency:
+  group: ccplus
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -n "$KEY" ] || [ -n "$OAUTH" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=CCPlus dormant::No ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN secret set. Skipping generation. See SETUP.md to activate."
+          fi
+
+  generate:
+    needs: guard
+    if: needs.guard.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run CCPlus generator (Claude Code)
+        uses: anthropics/claude-code-action@v1
+        with:
+          # Provide whichever credential you configured (one is enough):
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--model opus --allowedTools Read,Write,Edit,WebFetch,Bash,Glob,Grep"
+          prompt: |
+            You are running the CCPlus pipeline in CI. Follow prompts/generate-ccplus.md exactly,
+            using config/config.yaml and config/sources.yaml.
+            - Research via WebFetch over the source URLs (WebSearch may be unavailable in CI; rely
+              on WebFetch of the listed docs/release pages and the GitHub Releases API via `gh`).
+            - Generate a new CCPlus version ONLY if the significance rubric is met; otherwise append
+              a {"status":"no-update", ...} entry to state/runlog.json.
+            - Run the cross-model review (spawn a Sonnet reviewer).
+            - Update state/state.json, regenerate docs/index.html, and stage all changes.
+            ${{ github.event.inputs.force == 'true' && 'FORCE: generate even if not significant.' || '' }}
+
+      - name: Commit, push, and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name  "ccplus-bot"
+          git config user.email "ccplus-bot@users.noreply.github.com"
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes to commit (likely a no-update run)."
+            exit 0
+          fi
+          git add -A
+          git commit -m "CCPlus: weekly run ($(date -u +%Y-%m-%d))"
+          git push
+          # Create a release if a new artifact was added this run.
+          NEW=$(git show --name-only --pretty=format: HEAD | grep -E '^docs/artifacts/CCPlus_.*\.html$' || true)
+          if [ -n "$NEW" ]; then
+            BASENAME=$(basename "$NEW" .html)            # CCPlus_<timestamp>
+            TS=${BASENAME#CCPlus_}
+            gh release create "$TS" "$NEW" --title "$BASENAME" \
+              --notes "Automated CCPlus run. View: https://fredman08.github.io/CCPlus/artifacts/$(basename "$NEW")" \
+              || echo "release step skipped"
+          fi

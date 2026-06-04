@@ -76,21 +76,53 @@ Build it at <https://make.powerautomate.com> → **+ Create → Automated cloud 
 
 ---
 
-## Fallback — if Claude Code on the web can't be enabled
+> **Note:** As of June 2026, Claude Code on the web is **disabled** for this account, so the
+> Routine (section A) is not available yet. The active engine is **GitHub Actions** below. If
+> web access is later enabled, switch to the Routine (it needs no API key).
 
-Use **local headless** generation (no web entitlement, no API key — uses your CLI login):
+---
 
-1. Install Windows **Task Scheduler** or **Power Automate Desktop** to run weekly (Mon 13:00):
+## A2. GitHub Actions (active engine while Routines are unavailable)
+
+The workflow is committed at `.github/workflows/ccplus.yml`. It runs weekly (Mon 05:00 UTC =
+13:00 Asia/Manila) and via the **Run workflow** button (on-demand). It is **dormant until a
+credential secret is added**, so scheduled runs no-op cleanly until you activate it.
+
+### Activating
+
+Add **one** credential as a repo secret at
+`https://github.com/fredman08/CCPlus/settings/secrets/actions`:
+
+| Option | Secret | Notes |
+|--------|--------|-------|
+| **A. PAYG key** | `ANTHROPIC_API_KEY` | A Console pay-as-you-go key from console.anthropic.com. **Not** subscription credentials. ~$0.50–$2 per run. |
+| **B. OAuth token** | `CLAUDE_CODE_OAUTH_TOKEN` | Generated via `claude setup-token`; uses a Claude subscription instead of PAYG. Availability depends on your Enterprise plan — confirm with your admin. |
+| **C. Bedrock/Vertex** | (cloud creds) | If your organization already has Claude via AWS Bedrock / Google Vertex, authenticate the action with cloud credentials instead of an Anthropic key. Requires editing the workflow per the action's provider docs. |
+
+Then: **Actions tab → CCPlus weekly → Run workflow** to test. New artifacts publish to GitHub
+Pages automatically (push to `main` rebuilds Pages) and a GitHub Release is created.
+
+> Verify the `anthropics/claude-code-action` version and input names against its current docs
+> before enabling — the action evolves frequently.
+
+---
+
+## Other fallbacks
+
+**Local headless** (no API key — uses your CLI login; PC must be on at run time):
+
+1. Install the standalone CLI: `npm install -g @anthropic-ai/claude-code` (you currently have
+   only the VS Code extension), then sign in once with `claude` and confirm `claude --version`.
+2. Schedule weekly (Mon 13:00) via **Task Scheduler** / **Power Automate Desktop**, running from
+   the repo directory:
    ```powershell
-   claude -p "Follow prompts/generate-ccplus.md ..." --add-dir "C:\Users\user\CCPlus"
+   claude -p "Follow prompts/generate-ccplus.md ..." --permission-mode acceptEdits
    ```
-   (run from the repo directory; ensure `claude` is on PATH).
-2. Keep the same repo, Pages, and the Power Automate email flow (section B).
-3. The machine must be on at run time.
+3. Keep the same repo, Pages, and Power Automate email flow.
 
-A second fallback (GitHub Actions, cloud, requires a **Console pay-as-you-go** `ANTHROPIC_API_KEY`
-— *not* subscription credentials) is described in the project plan if you ever want fully
-unattended cloud runs without the web entitlement.
+**Manual on-demand only** (zero infrastructure): run **`/ccplus`** in VS Code whenever you want
+(e.g. a weekly calendar reminder). No CLI install, no key, no machine-on requirement. This works
+right now and is the recommended interim path until an Actions credential is sorted.
 
 ---
 
