@@ -21,6 +21,7 @@ on:
 
 permissions:
   contents: write                # commit/push the new artifact + state, create releases
+  id-token: write                # required by claude-code-action (OIDC token)
 
 concurrency:
   group: ccplus
