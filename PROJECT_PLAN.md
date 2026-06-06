@@ -5,13 +5,13 @@ techniques, and "hacks" — and publishes it as a versioned, cited, Anthropic-st
 
 - **Repo:** https://github.com/fredman08/CCPlus
 - **Live site:** https://fredman08.github.io/CCPlus/
-- **Owner:** fredman08@users.noreply.github.com · **Started:** June 4, 2026 · **Status:** v1.0 live
+- **Started:** June 4, 2026 · **Status:** v1.0 live
 
 ---
 
 ## 1. Context
 
-The owner (a Claude Code beginner on an an enterprise plan) plans to rely heavily on
+The owner (a Claude Code beginner on an enterprise plan) plans to rely heavily on
 Claude Code for project delivery. Because the AI space changes weekly, they want an automated
 pipeline that researches and surfaces what's new from Anthropic, the Claude community, and AI
 experts, and publishes it as a versioned, citation-backed, shareable document — generated weekly

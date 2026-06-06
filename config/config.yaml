@@ -40,8 +40,7 @@ state:
   runlog: state/runlog.json
 
 notify:
-  channel: outlook-email             # delivered by a Power Automate flow watching the repo
-  recipient: fredman08@users.noreply.github.com
+  channel: github-issue              # per-run comment on the "CCPlus run log" issue; emails repo watchers
 
 review:
   verdicts: [pass, pass_with_edits, fail]
